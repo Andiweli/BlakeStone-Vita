@@ -80,10 +80,8 @@ The commercial game data is not included. You must own a legal copy of the game 
 - **JAM Productions** — Blake Stone development
 - **id Software** — Wolfenstein 3D engine
 - **Apogee Entertainment** — publishing and original source release
-- **fgsfdsfgs** — control code used as the basis for the original Vita controls
-- **Rinnegatamante** — assistance with the PS Vita port
-- **VitaSDK and HENkaku contributors** — PS Vita homebrew toolchain and platform
-- **Andiweli** — current PS Vita maintenance, compatibility fixes and version 0.5
+- **01y** — original PS Vita port
+- **Andiweli** — compatibility fixes and version 0.5
 
 ## Disclaimer
 
