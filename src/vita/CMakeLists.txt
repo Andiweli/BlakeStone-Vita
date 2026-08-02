@@ -182,6 +182,7 @@ set(
     "../vgapal.cpp"
     "vita_input.cpp"
     "vita_palette_fade.cpp"
+    "vita_widescreen_fix.cpp"
 )
 
 add_executable(${SHORT_NAME}
@@ -189,13 +190,13 @@ add_executable(${SHORT_NAME}
     ${BSTONE_SOURCES}
 )
 
-# Keep the original renderer code intact, but rename its two palette fade
-# entry points in this translation unit. Vita uses the safe flat-buffer
-# implementations from vita_palette_fade.cpp instead.
+# Keep the original renderer code intact, but rename the desktop-oriented
+# entry points that are unsafe on current Vita SDL2/GXM builds. Vita uses the
+# compatibility implementations from the files in this directory instead.
 set_source_files_properties(
   "../id_vl.cpp"
   PROPERTIES
-    COMPILE_DEFINITIONS "VL_FadeIn=VL_FadeIn_legacy_unsafe;VL_FadeOut=VL_FadeOut_legacy_unsafe"
+    COMPILE_DEFINITIONS "VL_FadeIn=VL_FadeIn_legacy_unsafe;VL_FadeOut=VL_FadeOut_legacy_unsafe;vl_update_widescreen=vl_update_widescreen_legacy_unsafe"
 )
 
 target_link_libraries(${SHORT_NAME}
