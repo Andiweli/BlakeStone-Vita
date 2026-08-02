@@ -2,6 +2,11 @@
 
 # Blake Stone PS Vita Port
 
+[![Latest release](https://img.shields.io/github/v/release/andiweli/BlakeStone-Vita?label=latest%20Vita%20release)](https://github.com/andiweli/BlakeStone-Vita/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-PS%20Vita%20%2F%20PSTV-blue)](https://github.com/andiweli/BlakeStone-Vita)
+[![Renderer](https://img.shields.io/badge/renderer-SDL2%20%2B%20Vita2D-brightgreen.svg)](https://github.com/andiweli/BlakeStone-Vita)
+![AI](https://img.shields.io/badge/AI-assisted%20coding-6e7781)
+
 **Blake Stone Vita** is a PlayStation Vita port of BStone for **Blake Stone: Aliens of Gold** and **Blake Stone: Planet Strike**. It brings both classic first-person shooters to PS Vita with controller, touchscreen and native on-screen keyboard support.
 
 This repository contains the current **PS Vita homebrew version 0.5**. Original game data is required and is not included.
