@@ -188,6 +188,7 @@ set(
     "vita_widescreen_fix.cpp"
     "vita_pref_path_fix.cpp"
     "vita_startup_screen_fix.cpp"
+    "vita_title_screen.cpp"
     "vita_save_osk.cpp"
     "vita_touch_fix.cpp"
 )
@@ -215,13 +216,13 @@ set_source_files_properties(
     COMPILE_DEFINITIONS "VL_FadeIn=VL_FadeIn_legacy_unsafe;VL_FadeOut=VL_FadeOut_legacy_unsafe;vl_update_widescreen=vl_update_widescreen_legacy_unsafe"
 )
 
-# Prevent the generic profile initialization from calling SDL_GetPrefPath on
-# Vita. That call creates ux0:/data/bibendovsky/bstone/ even though the port
-# subsequently uses ux0:/data/bstone/ as its fixed profile directory.
+# Prevent SDL_GetPrefPath from creating bibendovsky/bstone on Vita. Redirect
+# the first menu call through a safe title-screen presenter while the original
+# crash-prone movie/palette title path remains bypassed.
 set_source_files_properties(
   "../3d_main.cpp"
   PROPERTIES
-    COMPILE_DEFINITIONS "SDL_GetPrefPath=bstone_vita_get_pref_path"
+    COMPILE_DEFINITIONS "SDL_GetPrefPath=bstone_vita_get_pref_path;US_ControlPanel=bstone_vita_control_panel"
 )
 
 # Use the native Vita on-screen keyboard only for savegame-name entry.
