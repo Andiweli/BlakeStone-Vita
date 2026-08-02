@@ -1,10 +1,9 @@
 /*
 BStone Vita direct title-screen presentation.
 
-The startup movie is skipped on Vita because the following title presentation
-aborts in current SDL2/GXM builds. Show exactly one static title screen before
-the first menu. The title graphic and its game-specific palette are copied and
-presented without movie mode, fades or the Planet Strike fizzle effect.
+This is retained as a fallback for configurations that explicitly skip the
+original startup screens. With the aligned movie parser active, the default
+Vita path uses the original intro and title sequence instead.
 */
 
 #include <array>
@@ -20,6 +19,7 @@ presented without movie mode, fades or the Planet Strike fizzle effect.
 #include "../id_vh.h"
 #include "../id_vl.h"
 
+extern bool g_no_screens;
 extern std::int16_t TITLEPIC;
 extern std::int16_t TITLE1PIC;
 extern std::int16_t TITLEPALETTE;
@@ -39,6 +39,13 @@ using Palette = std::array<std::uint8_t, palette_byte_count>;
 
 void show_direct_title_screen_once()
 {
+	// The direct title is only a fallback when the original startup/title
+	// sequence is intentionally disabled.
+	if (!::g_no_screens)
+	{
+		return;
+	}
+
 	static bool was_shown = false;
 
 	if (was_shown)
@@ -78,8 +85,6 @@ void show_direct_title_screen_once()
 
 	::UNCACHEGRCHUNK(TITLEPALETTE);
 
-	// CA_CacheScreen was already stable on Vita before the intro was restored.
-	// Keep movie mode disabled and avoid all fade/fizzle paths here.
 	::vid_is_movie = false;
 	::IN_ClearKeysDown();
 	::CA_CacheScreen(title_chunk);
