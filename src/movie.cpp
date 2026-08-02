@@ -9,18 +9,10 @@ This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the
-Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
+
+#include <cstring>
 
 #include "an_codes.h"
 #include "id_ca.h"
@@ -35,14 +27,30 @@ Free Software Foundation, Inc.,
 #include "bstone_endian.h"
 
 
+namespace
+{
+
+
+template<typename T>
+T read_unaligned(const void* const source)
+{
+	T value{};
+	std::memcpy(&value, source, sizeof(value));
+	return value;
+}
+
+
+} // namespace
+
+
 class Movie
 {
 public:
 	//
-	// Playes an animation.
+	// Plays an animation.
 	//
 	// Returns:
-	//    - True if movie file was found and "played".
+	//    - True if movie file was found and played.
 	//    - False otherwise.
 	//
 	bool play(
@@ -54,16 +62,14 @@ private:
 	struct Descriptor
 	{
 		AssetsCRefString file_base_name_;
-
 		std::int8_t repeat_count_;
 		std::int8_t tick_delay_;
-	}; // descriptor
+	}; // Descriptor
 
 
 	struct AnimFrame
 	{
 		static constexpr auto class_size = 12;
-
 
 		std::uint16_t code;
 		std::int32_t block_num;
@@ -77,11 +83,9 @@ private:
 	{
 		static constexpr auto class_size = 6;
 
-
 		std::uint16_t opt;
 		std::uint16_t offset;
 		std::uint16_t length;
-
 
 		void endian()
 		{
@@ -100,8 +104,10 @@ private:
 
 
 	static constexpr auto max_movies = 4;
+	static constexpr auto max_buffer_size = 65'536;
 
 	using Descriptors = std::array<Descriptor, max_movies>;
+	using Buffer = std::vector<char>;
 
 
 	enum class Flag
@@ -112,26 +118,21 @@ private:
 	}; // Flag
 
 
-	static constexpr auto max_buffer_size = 65'536;
-
-
-	using Buffer = std::vector<char>;
-
 	bstone::FileStream file_stream_;
-
 	Buffer buffer_;
-	int buffer_offset_; // Len of data loaded into buffer_
-	char* buffer_ptr_; // Ptr to next frame in buffer_
-	char* next_ptr_; // Ptr Ofs to next frame after BufferOfs
 
-	bool has_more_pages_; // More Pages avail on disk?
+	int buffer_offset_{}; // Length of data loaded into buffer.
+	char* buffer_ptr_{}; // Pointer to the current buffered frame.
+	char* next_ptr_{}; // Pointer to the next buffered frame.
+	AnimFrame current_frame_{};
 
-	Flag flag_;
-	bool is_exit_;
-	bool is_ever_faded_;
-	int repeat_count_;
-	ControlInfo control_info_;
-	const std::uint8_t* palette_;
+	bool has_more_pages_{};
+	Flag flag_{};
+	bool is_exit_{};
+	bool is_ever_faded_{};
+	int repeat_count_{};
+	ControlInfo control_info_{};
+	const std::uint8_t* palette_{};
 
 	bstone::ArchiverUPtr archiver_;
 
@@ -139,64 +140,28 @@ private:
 	const Descriptor& get_descriptor(
 		const MovieId movie_id);
 
-	//
-	// Inits all the internal routines for the Movie Presenter
-	//
 	void initialize(
-		const Descriptor& MovieDescriptor,
+		const Descriptor& descriptor,
 		const std::uint8_t* const palette);
 
 	void uninitialize();
 
-	//
-	// Draws a block of image.
-	//
-	// Parameters:
-	//    - byte_offset - offset for the image to be drawn.
-	//
-	//    - source - source image of graphic to be blasted to latch memory.
-	//               This pic is NOT 'munged'.
-	//
-	//    - length = length of the source image in bytes
-	//
+	void validate_frame_size(
+		const int record_size) const;
+
 	void jm_draw_block(
 		const int byte_offset,
 		const char* const source,
 		const int length);
 
-	//
-	// Shows an animation frame
-	//
-	// Parameters:
-	//    - inpic - pointer to animpic.
-	//
 	void show_frame(
-		char* inpic);
+		const char* frame_data,
+		const int frame_size);
 
-	//
-	// Loads the RAM Buffer full of graphics.
-	//
-	// Returns:
-	//    - True if more pages available.
-	//    - False otherwise.
-	//
 	bool load_buffer();
 
-	//
-	// Returns pointer to next Block/Screen of animation
-	//
-	// This function "buffers" the movie presentation.
-	// It loads and buffers incomming frames of animation.
-	//
-	// Returns:
-	//    - True on success.
-	//    - False otherwise.
-	//
 	bool get_frame();
 
-	//
-	// This handles the current page of data from the ram buffer.
-	//
 	void handle_page(
 		const Descriptor& descriptor);
 }; // Movie
@@ -211,7 +176,7 @@ const Movie::Descriptor& Movie::get_descriptor(
 		{Assets::get_episode_6_fmv_base_name(), 1, 3}, // final
 		{Assets::get_episode_2_4_fmv_base_name(), 1, 3}, // final_2
 		{Assets::get_episode_3_5_fmv_base_name(), 1, 3}, // final_3
-	}}; // descriptors
+	}};
 
 	return descriptors[movie_id];
 }
@@ -223,19 +188,19 @@ void Movie::initialize(
 	repeat_count_ = descriptor.repeat_count_;
 	flag_ = Flag::fill;
 	buffer_offset_ = 0;
+	buffer_ptr_ = nullptr;
+	next_ptr_ = nullptr;
+	current_frame_ = {};
 	has_more_pages_ = true;
 	is_exit_ = false;
 	is_ever_faded_ = false;
-
+	control_info_ = {};
 	palette_ = palette;
 
 	::JM_VGALinearFill(0, ::vga_ref_width * ::vga_ref_height, 0);
-
 	::VL_FillPalette(0, 0, 0);
 
-	// Find out how much memory we have to work with.
 	buffer_.resize(max_buffer_size);
-
 	archiver_ = bstone::ArchiverFactory::create();
 
 	::IN_ClearKeysDown();
@@ -245,7 +210,21 @@ void Movie::uninitialize()
 {
 	archiver_ = nullptr;
 	buffer_.clear();
+	buffer_offset_ = 0;
+	buffer_ptr_ = nullptr;
+	next_ptr_ = nullptr;
+	current_frame_ = {};
 	file_stream_.close();
+}
+
+void Movie::validate_frame_size(
+	const int record_size) const
+{
+	if (record_size < 0 ||
+		record_size > (max_buffer_size - AnimFrame::class_size))
+	{
+		archiver_->throw_exception("Movie frame size out of range.");
+	}
 }
 
 void Movie::jm_draw_block(
@@ -253,6 +232,17 @@ void Movie::jm_draw_block(
 	const char* const source,
 	const int length)
 {
+	const auto screen_size = ::vga_ref_width * ::vga_ref_height;
+
+	if (!source ||
+		byte_offset < 0 ||
+		length < 0 ||
+		byte_offset > screen_size ||
+		length > (screen_size - byte_offset))
+	{
+		archiver_->throw_exception("Movie drawing block out of range.");
+	}
+
 	auto x = byte_offset % ::vga_ref_width;
 	auto y = byte_offset / ::vga_ref_width;
 
@@ -271,29 +261,55 @@ void Movie::jm_draw_block(
 }
 
 void Movie::show_frame(
-	char* inpic)
+	const char* frame_data,
+	const int frame_size)
 {
-	if (!inpic)
+	if (!frame_data || frame_size < 0)
 	{
-		return;
+		archiver_->throw_exception("Invalid movie frame.");
 	}
+
+	auto remaining = frame_size;
+	auto cursor = frame_data;
 
 	while (true)
 	{
-		auto& ah = *reinterpret_cast<AnimChunk*>(inpic);
-
-		if (ah.opt == 0)
+		// Movie chunks are tightly packed. Their addresses are not guaranteed
+		// to have natural alignment on ARM, so all integer fields are copied to
+		// aligned local objects before they are accessed.
+		if (remaining < static_cast<int>(sizeof(std::uint16_t)))
 		{
-			break;
+			archiver_->throw_exception("Missing movie frame terminator.");
 		}
 
-		ah.endian();
+		auto option = read_unaligned<std::uint16_t>(cursor);
+		option = bstone::Endian::little(option);
 
-		inpic += AnimChunk::class_size;
+		if (option == 0)
+		{
+			return;
+		}
 
-		jm_draw_block(ah.offset, inpic, ah.length);
+		if (remaining < AnimChunk::class_size)
+		{
+			archiver_->throw_exception("Truncated movie animation chunk.");
+		}
 
-		inpic += ah.length;
+		auto chunk = read_unaligned<AnimChunk>(cursor);
+		chunk.endian();
+
+		cursor += AnimChunk::class_size;
+		remaining -= AnimChunk::class_size;
+
+		if (chunk.length > remaining)
+		{
+			archiver_->throw_exception("Movie animation chunk exceeds frame.");
+		}
+
+		jm_draw_block(chunk.offset, cursor, chunk.length);
+
+		cursor += chunk.length;
+		remaining -= chunk.length;
 	}
 }
 
@@ -304,43 +320,47 @@ bool Movie::load_buffer()
 
 	next_ptr_ = frame;
 	buffer_ptr_ = frame;
+	buffer_offset_ = 0;
 
-	AnimFrame blk;
-
-	while (free_space)
+	while (free_space > 0)
 	{
-		const auto chunkstart = file_stream_.get_position();
+		const auto chunk_start = file_stream_.get_position();
 
-		blk.code = archiver_->read_uint16();
-		blk.block_num = archiver_->read_int32();
-		blk.recsize = archiver_->read_int32();
+		auto block = AnimFrame{};
+		block.code = archiver_->read_uint16();
+		block.block_num = archiver_->read_int32();
+		block.recsize = archiver_->read_int32();
 
-		if (blk.code == AN_END_OF_ANIM)
+		if (block.code == AN_END_OF_ANIM)
 		{
 			return false;
 		}
 
-		if (free_space >= (blk.recsize + AnimFrame::class_size))
+		validate_frame_size(block.recsize);
+
+		const auto total_size = AnimFrame::class_size + block.recsize;
+
+		if (total_size > free_space)
 		{
-			*reinterpret_cast<AnimFrame*>(frame) = blk;
-
-			free_space -= AnimFrame::class_size;
-			frame += AnimFrame::class_size;
-			buffer_offset_ += AnimFrame::class_size;
-
-			if (blk.recsize > 0)
-			{
-				archiver_->read_char_array(frame, blk.recsize);
-			}
-
-			free_space -= blk.recsize;
-			frame += blk.recsize;
-			buffer_offset_ += blk.recsize;
+			file_stream_.set_position(chunk_start);
+			break;
 		}
-		else
+
+		// Never assign through an AnimFrame pointer into the packed char buffer.
+		// A previous variable-length frame can leave this address only 2-byte
+		// aligned, which causes a Data Abort on PS Vita for the 32-bit fields.
+		std::memcpy(frame, &block, AnimFrame::class_size);
+
+		frame += AnimFrame::class_size;
+		free_space -= AnimFrame::class_size;
+		buffer_offset_ += AnimFrame::class_size;
+
+		if (block.recsize > 0)
 		{
-			file_stream_.set_position(chunkstart);
-			free_space = 0;
+			archiver_->read_char_array(frame, block.recsize);
+			frame += block.recsize;
+			free_space -= block.recsize;
+			buffer_offset_ += block.recsize;
 		}
 	}
 
@@ -351,23 +371,51 @@ bool Movie::get_frame()
 {
 	if (buffer_offset_ == 0)
 	{
-		if (has_more_pages_)
+		if (!has_more_pages_)
 		{
-			has_more_pages_ = load_buffer();
+			return false;
 		}
-		else
+
+		has_more_pages_ = load_buffer();
+
+		if (buffer_offset_ == 0)
 		{
 			return false;
 		}
 	}
 
+	if (buffer_offset_ < AnimFrame::class_size || !next_ptr_)
+	{
+		archiver_->throw_exception("Truncated movie frame header.");
+	}
+
 	buffer_ptr_ = next_ptr_;
 
-	const auto& blk = *reinterpret_cast<const AnimFrame*>(buffer_ptr_);
+	const auto buffer_begin = buffer_.data();
+	const auto buffer_end = buffer_begin + buffer_.size();
 
-	buffer_offset_ -= AnimFrame::class_size;
-	buffer_offset_ -= blk.recsize;
-	next_ptr_ = buffer_ptr_ + AnimFrame::class_size + blk.recsize;
+	if (buffer_ptr_ < buffer_begin ||
+		buffer_ptr_ > (buffer_end - AnimFrame::class_size))
+	{
+		archiver_->throw_exception("Movie frame pointer out of range.");
+	}
+
+	// Packed frames are not guaranteed to be 4-byte aligned. Copy the header
+	// into an aligned object before accessing its 32-bit fields.
+	current_frame_ = read_unaligned<AnimFrame>(buffer_ptr_);
+
+	validate_frame_size(current_frame_.recsize);
+
+	const auto total_size = AnimFrame::class_size + current_frame_.recsize;
+
+	if (total_size > buffer_offset_ ||
+		buffer_ptr_ > (buffer_end - total_size))
+	{
+		archiver_->throw_exception("Movie frame payload out of range.");
+	}
+
+	buffer_offset_ -= total_size;
+	next_ptr_ = buffer_ptr_ + total_size;
 
 	return true;
 }
@@ -375,87 +423,84 @@ bool Movie::get_frame()
 void Movie::handle_page(
 	const Descriptor& descriptor)
 {
-	const auto& blk = *reinterpret_cast<const AnimFrame*>(buffer_ptr_);
-
-	buffer_ptr_ += AnimFrame::class_size;
-
-	auto frame = buffer_ptr_;
+	const auto& block = current_frame_;
+	auto frame = buffer_ptr_ + AnimFrame::class_size;
+	auto frame_size = block.recsize;
 
 	::IN_ReadControl(0, &control_info_);
 
-	switch (blk.code)
+	switch (block.code)
 	{
 	case AN_SOUND:
 	{
-		// Sound Chunk
-		//
+		if (frame_size < static_cast<int>(sizeof(std::uint16_t)))
+		{
+			archiver_->throw_exception("Truncated movie sound command.");
+		}
 
-		const auto sound_chunk = bstone::Endian::little(*reinterpret_cast<const std::uint16_t*>(frame));
+		auto sound_chunk = read_unaligned<std::uint16_t>(frame);
+		sound_chunk = bstone::Endian::little(sound_chunk);
 
 		::sd_play_player_sound(sound_chunk, bstone::ActorChannel::item);
-
-		buffer_ptr_ += blk.recsize;
+		break;
 	}
-	break;
 
 	case AN_FADE_IN_FRAME:
-		// Fade In Page
-		//
-
 		::VL_FadeIn(0, 255, palette_, 30);
 		is_ever_faded_ = true;
 		::screenfaded = false;
 		break;
 
 	case AN_FADE_OUT_FRAME:
-		// Fade Out Page
-		//
-
 		VW_FadeOut();
 		::screenfaded = true;
 		break;
 
-	case AN_PAUSE: // Pause
+	case AN_PAUSE:
 	{
-		const auto vbls = bstone::Endian::little(*reinterpret_cast<const std::uint16_t*>(frame));
+		if (frame_size < static_cast<int>(sizeof(std::uint16_t)))
+		{
+			archiver_->throw_exception("Truncated movie pause command.");
+		}
+
+		auto vbls = read_unaligned<std::uint16_t>(frame);
+		vbls = bstone::Endian::little(vbls);
 
 		::IN_UserInput(vbls);
-
-		buffer_ptr_ += blk.recsize;
-
-		// BBi
 		::IN_ClearKeysDown();
 		control_info_ = {};
-		// BBi
+		break;
 	}
-	break;
 
-	// Graphics Chunk
 	case AN_PAGE:
 	{
 		if (flag_ == Flag::fill)
 		{
-			// First page coming in. Fill screen with fill color...
-			//
+			if (frame_size < 1)
+			{
+				archiver_->throw_exception("Truncated first movie page.");
+			}
 
-			// Set READ flag to skip the first frame on an anim repeat
 			flag_ = Flag::none;
-
-			::JM_VGALinearFill(0, ::vga_ref_width * ::vga_ref_height, *frame);
+			::JM_VGALinearFill(
+				0,
+				::vga_ref_width * ::vga_ref_height,
+				static_cast<std::uint8_t>(*frame));
 
 			++frame;
+			--frame_size;
 		}
 
-		show_frame(frame);
-
+		show_frame(frame, frame_size);
 		::VL_RefreshScreen();
 
 		if (TimeCount < static_cast<std::uint32_t>(descriptor.tick_delay_))
 		{
 			const auto min_wait_time = 0;
-			const auto max_wait_time = 2 * TickBase; // 2 seconds
+			const auto max_wait_time = 2 * TickBase;
 
-			auto wait_time = descriptor.tick_delay_ - static_cast<int>(TimeCount);
+			auto wait_time =
+				descriptor.tick_delay_ - static_cast<int>(TimeCount);
 
 			if (wait_time < min_wait_time)
 			{
@@ -471,7 +516,6 @@ void Movie::handle_page(
 			{
 				wait_time *= 1000;
 				wait_time /= TickBase;
-
 				::sys_sleep_for(wait_time);
 			}
 		}
@@ -483,14 +527,14 @@ void Movie::handle_page(
 		::TimeCount = 0;
 
 		if (!::screenfaded &&
-			(control_info_.button0 || control_info_.button1 || ::LastScan != ScanCode::sc_none))
+			(control_info_.button0 ||
+				control_info_.button1 ||
+				::LastScan != ScanCode::sc_none))
 		{
 			is_exit_ = true;
 
 			if (is_ever_faded_)
 			{
-				// This needs to be a passed flag...
-
 				VW_FadeOut();
 				::screenfaded = true;
 			}
@@ -503,7 +547,7 @@ void Movie::handle_page(
 		break;
 
 	default:
-		::Quit("Unrecognized anim code.");
+		archiver_->throw_exception("Unrecognized movie animation code.");
 	}
 }
 
@@ -513,18 +557,13 @@ bool Movie::play(
 {
 	const auto& descriptor = get_descriptor(movie_id);
 
-	// Init our Movie Stuff...
-	//
-
 	initialize(descriptor, palette);
-
-	// Start the anim process
-	//
 
 	::ca_open_resource(descriptor.file_base_name_, file_stream_);
 
 	if (!file_stream_.is_open())
 	{
+		uninitialize();
 		return false;
 	}
 
@@ -545,17 +584,18 @@ bool Movie::play(
 			}
 
 			--repeat_count_;
-
 			flag_ = Flag::skip;
 		}
 	}
-	catch (const bstone::ArchiverException& ex)
+	catch (const bstone::ArchiverException&)
 	{
-		::Quit(ex.get_message());
+		// A malformed or truncated optional movie must never take down the Vita
+		// process. Abort it and let the caller continue to the next screen.
+		uninitialize();
+		return false;
 	}
 
 	uninitialize();
-
 	return true;
 }
 
