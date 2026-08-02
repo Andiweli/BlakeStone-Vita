@@ -29,8 +29,7 @@ This repository contains the current **PS Vita homebrew version 0.5**. Original 
 1. Install the `BlakeStone.vpk` on your PS Vita.
 2. Create the directory `ux0:/data/bstone/` if it does not already exist.
 3. Copy the required original game assets into that directory.
-4. Start the main LiveArea item to launch Aliens of Gold when available. The automatic selection order is full Aliens of Gold, shareware Aliens of Gold, then Planet Strike.
-5. Use the Planet Strike LiveArea item to launch Planet Strike directly.
+4. Start the game via LiveArea
 
 Assets for multiple supported versions may coexist in the same directory. For reliable operation, close an already running instance before launching the application again from LiveArea.
 
