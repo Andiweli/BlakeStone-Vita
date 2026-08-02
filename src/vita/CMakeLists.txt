@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   if(DEFINED ENV{VITASDK})
@@ -12,18 +12,25 @@ set(SHORT_NAME bstone)
 project(${SHORT_NAME})
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
-set(VITA_APP_NAME "bstone")
+set(VITA_APP_NAME "Blake Stone")
 set(VITA_TITLEID  "BSTONE012")
 set(VITA_VERSION  "00.40")
 
-set(BSTONE_FLAGS "-Wall -fpermissive -Ofast -flto -funroll-loops -fvariable-expansion-in-unroller")
-
 option(VITA_TEST "Vita debug mode" OFF)
+option(VITA_SHOW_WARNINGS "Show compiler warnings from the original sources" OFF)
+
+if(VITA_SHOW_WARNINGS)
+  set(BSTONE_WARNING_FLAGS "-Wall")
+else()
+  set(BSTONE_WARNING_FLAGS "-w")
+endif()
+
+# Keep the original Vita port's compiler and optimization settings unchanged.
+set(BSTONE_FLAGS "${BSTONE_WARNING_FLAGS} -fpermissive -Ofast -flto -funroll-loops -fvariable-expansion-in-unroller")
 
 if(VITA_TEST)
   add_definitions(-DVITATEST)
-#  set(BSTONE_FLAGS "-Wall -fpermissive -g -Og")
-  set(VITA_APP_NAME "bstone-t")
+  set(VITA_APP_NAME "Blake Stone Test")
 endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 ${BSTONE_FLAGS}")
@@ -187,11 +194,13 @@ target_link_libraries(${SHORT_NAME}
   SceDisplay_stub
   SceCtrl_stub
   SceAudio_stub
+  SceAudioIn_stub
   SceSysmodule_stub
   SceGxm_stub
   SceCommonDialog_stub
   SceTouch_stub
   SceHid_stub
+  SceMotion_stub
   m
   ScePower_stub
   SceAppUtil_stub
