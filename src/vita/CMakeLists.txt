@@ -142,7 +142,6 @@ set(
     "../bstone_binary_writer.h"
     "../bstone_cl_args.h"
     "../bstone_crc32.h"
-    "../bstone_endian.h"
     "../bstone_file_stream.h"
     "../bstone_fizzle_fx.h"
     "../bstone_fixed_point.h"
@@ -257,6 +256,8 @@ set(
     "vita_palette_fade.cpp"
     "vita_widescreen_fix.cpp"
     "vita_pref_path_fix.cpp"
+    "vita_startup_screen_fix.cpp"
+    "vita_title_screen.cpp"
     "vita_save_osk.cpp"
     "vita_touch_fix.cpp"
 )
@@ -284,12 +285,13 @@ set_source_files_properties(
     COMPILE_DEFINITIONS "VL_FadeIn=VL_FadeIn_legacy_unsafe;VL_FadeOut=VL_FadeOut_legacy_unsafe;vl_update_widescreen=vl_update_widescreen_legacy_unsafe"
 )
 
-# Prevent the generic profile initialization from calling SDL_GetPrefPath on
-# Vita. The original PreDemo -> DemoLoop intro/title control flow is retained.
+# Prevent SDL_GetPrefPath from creating the desktop profile directory. The
+# intro/demo screens are skipped and the first menu call presents one direct,
+# fade-free title screen through vita_title_screen.cpp.
 set_source_files_properties(
   "${BSTONE_GENERATED_3D_MAIN}"
   PROPERTIES
-    COMPILE_DEFINITIONS "SDL_GetPrefPath=bstone_vita_get_pref_path"
+    COMPILE_DEFINITIONS "SDL_GetPrefPath=bstone_vita_get_pref_path;US_ControlPanel=bstone_vita_control_panel"
 )
 
 # Use the native Vita on-screen keyboard only for savegame-name entry.
