@@ -11,6 +11,7 @@ user confirms the dialog.
 #include <cctype>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #include "SDL.h"
 #include "../id_in.h"
