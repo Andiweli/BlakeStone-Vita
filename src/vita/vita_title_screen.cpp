@@ -5,13 +5,14 @@ The original DemoLoop title path combines movie-mode rendering, a dedicated
 palette, version text and fades. Current Vita SDL2/GXM builds abort in that
 combined path before the title becomes visible. The existing startup bypass
 keeps that path disabled; this wrapper restores the title image safely before
-the first main menu by using the already stable menu renderer and VGA palette.
+the first main menu using the stable menu renderer and the game's TITLEPALETTE.
 */
 
 #include <cstdint>
 
 #include "../3d_def.h"
 #include "../bstone_log.h"
+#include "../id_ca.h"
 #include "../id_heads.h"
 #include "../id_in.h"
 #include "../id_vh.h"
@@ -20,6 +21,7 @@ the first main menu by using the already stable menu renderer and VGA palette.
 
 extern std::int16_t TITLEPIC;
 extern std::int16_t TITLE1PIC;
+extern std::int16_t TITLEPALETTE;
 
 void CA_CacheScreen(std::int16_t chunk);
 void VH_UpdateScreen();
@@ -41,33 +43,34 @@ void show_safe_title_screen_once()
 	was_shown = true;
 
 	// Aliens of Gold initializes TITLEPIC, while Planet Strike initializes
-	// TITLE1PIC. Avoid pulling the private AssetsInfo declaration into this
-	// small Vita compatibility translation unit.
+	// TITLE1PIC.
 	const auto title_chunk = TITLEPIC != 0 ? TITLEPIC : TITLE1PIC;
 	const auto old_movie_state = ::vid_is_movie;
 
 	bstone::Log::write("VITA: Showing safe title screen...");
 
-	// Keep the stable menu rendering mode. The original movie-mode/palette
-	// combination remains bypassed until it can be repaired independently.
+	// Keep the stable menu rendering mode. The original movie-mode title path
+	// remains bypassed until it can be repaired independently.
 	::vid_is_movie = false;
 	::IN_ClearKeysDown();
 
-	bstone::Log::write("VITA: Caching title screen...");
+	bstone::Log::write("VITA: Caching title screen and palette...");
 	::CA_CacheScreen(title_chunk);
-	bstone::Log::write("VITA: Title screen cached.");
+	::CA_CacheGrChunk(TITLEPALETTE);
+
+	const auto* const title_palette = static_cast<const std::uint8_t*>(
+		::grsegs[TITLEPALETTE]);
+
+	::VL_SetPalette(0, 256, title_palette);
+	::VL_SetPaletteIntensity(0, 255, title_palette, 0);
+
+	bstone::Log::write("VITA: Title screen and palette cached.");
 
 	VW_UpdateScreen();
 	bstone::Log::write("VITA: Title screen presented.");
 
-	if (::screenfaded)
-	{
-		::VW_FadeIn();
-	}
-	else
-	{
-		::VL_RefreshScreen();
-	}
+	::VL_FadeIn(0, 255, title_palette, 30);
+	::UNCACHEGRCHUNK(TITLEPALETTE);
 
 	bstone::Log::write("VITA: Waiting on title screen...");
 	static_cast<void>(::IN_UserInput(TickBase * 6));
