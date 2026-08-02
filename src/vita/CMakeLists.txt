@@ -181,11 +181,21 @@ set(
     "../stub.cpp"
     "../vgapal.cpp"
     "vita_input.cpp"
+    "vita_palette_fade.cpp"
 )
 
 add_executable(${SHORT_NAME}
     ${BSTONE_HEADERS}
     ${BSTONE_SOURCES}
+)
+
+# Keep the original renderer code intact, but rename its two palette fade
+# entry points in this translation unit. Vita uses the safe flat-buffer
+# implementations from vita_palette_fade.cpp instead.
+set_source_files_properties(
+  "../id_vl.cpp"
+  PROPERTIES
+    COMPILE_DEFINITIONS "VL_FadeIn=VL_FadeIn_legacy_unsafe;VL_FadeOut=VL_FadeOut_legacy_unsafe"
 )
 
 target_link_libraries(${SHORT_NAME}
