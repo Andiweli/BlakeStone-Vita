@@ -14,7 +14,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "Blake Stone")
 set(VITA_TITLEID  "BSTONE012")
-set(VITA_VERSION  "00.40")
+set(VITA_VERSION  "00.50")
 
 option(VITA_TEST "Vita debug mode" OFF)
 option(VITA_SHOW_WARNINGS "Show compiler warnings from the original sources" OFF)
@@ -39,6 +39,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 ${BSTONE_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/bstone.map")
 
 include_directories(
+  ".."
   "../dosbox"
   "${VITASDK}/arm-vita-eabi/include/SDL2"
 )
@@ -46,6 +47,79 @@ include_directories(
 link_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# Generate Vita-only variants of the two large shared sources. This keeps the
+# desktop sources untouched while applying small, explicit Vita UI/startup
+# changes at configure time.
+set(BSTONE_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
+file(MAKE_DIRECTORY "${BSTONE_GENERATED_DIR}")
+
+set(BSTONE_GENERATED_3D_MENU "${BSTONE_GENERATED_DIR}/3d_menu_vita.cpp")
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/../3d_menu.cpp" BSTONE_3D_MENU_VITA_SOURCE)
+
+string(REPLACE
+  "\"SWITCHES2\""
+  "\"SKIP OPTIONS\""
+  BSTONE_3D_MENU_VITA_SOURCE
+  "${BSTONE_3D_MENU_VITA_SOURCE}"
+)
+
+string(REPLACE
+  "DrawMenuTitle(\"GAME SWITCHES 2\")"
+  "DrawMenuTitle(\"SKIP OPTIONS\")"
+  BSTONE_3D_MENU_VITA_SOURCE
+  "${BSTONE_3D_MENU_VITA_SOURCE}"
+)
+
+# Vita confirmation dialogs: Cross is YES and Circle is NO. Cross remains the
+# normal menu-select key and Circle keeps its normal back/gameplay behaviour.
+string(REPLACE
+[=[} while (!Keyboard[ScanCode::sc_y] && !Keyboard[ScanCode::sc_n] && !Keyboard[ScanCode::sc_escape]);]=]
+[=[#ifdef __vita__
+	} while (!Keyboard[ScanCode::sc_return] && !Keyboard[ScanCode::sc_alt] && !Keyboard[ScanCode::sc_escape]);
+#else
+	} while (!Keyboard[ScanCode::sc_y] && !Keyboard[ScanCode::sc_n] && !Keyboard[ScanCode::sc_escape]);
+#endif]=]
+  BSTONE_3D_MENU_VITA_SOURCE
+  "${BSTONE_3D_MENU_VITA_SOURCE}"
+)
+
+string(REPLACE
+[=[if (Keyboard[ScanCode::sc_y])]=]
+[=[#ifdef __vita__
+	if (Keyboard[ScanCode::sc_return])
+#else
+	if (Keyboard[ScanCode::sc_y])
+#endif]=]
+  BSTONE_3D_MENU_VITA_SOURCE
+  "${BSTONE_3D_MENU_VITA_SOURCE}"
+)
+
+string(REPLACE
+[=[while (Keyboard[ScanCode::sc_y] || Keyboard[ScanCode::sc_n] || Keyboard[ScanCode::sc_escape])]=]
+[=[#ifdef __vita__
+	while (Keyboard[ScanCode::sc_return] || Keyboard[ScanCode::sc_alt] || Keyboard[ScanCode::sc_escape])
+#else
+	while (Keyboard[ScanCode::sc_y] || Keyboard[ScanCode::sc_n] || Keyboard[ScanCode::sc_escape])
+#endif]=]
+  BSTONE_3D_MENU_VITA_SOURCE
+  "${BSTONE_3D_MENU_VITA_SOURCE}"
+)
+
+file(WRITE "${BSTONE_GENERATED_3D_MENU}" "${BSTONE_3D_MENU_VITA_SOURCE}")
+
+set(BSTONE_GENERATED_JM_FREE "${BSTONE_GENERATED_DIR}/jm_free_vita.cpp")
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/../jm_free.cpp" BSTONE_JM_FREE_VITA_SOURCE)
+string(REPLACE
+  "::PreDemo();"
+  "::bstone_vita_pre_demo();"
+  BSTONE_JM_FREE_VITA_SOURCE
+  "${BSTONE_JM_FREE_VITA_SOURCE}"
+)
+set(BSTONE_JM_FREE_VITA_SOURCE
+  "void bstone_vita_pre_demo();\n${BSTONE_JM_FREE_VITA_SOURCE}"
+)
+file(WRITE "${BSTONE_GENERATED_JM_FREE}" "${BSTONE_JM_FREE_VITA_SOURCE}")
 
 set(
     BSTONE_HEADERS
@@ -127,7 +201,7 @@ set(
     "../3d_game.cpp"
     "../3d_inter.cpp"
     "../3d_main.cpp"
-    "../3d_menu.cpp"
+    "${BSTONE_GENERATED_3D_MENU}"
     "../3d_msgs.cpp"
     "../3d_play.cpp"
     "../3d_scale.cpp"
@@ -174,7 +248,7 @@ set(
     "../id_vh.cpp"
     "../id_vl.cpp"
     "../jm_cio.cpp"
-    "../jm_free.cpp"
+    "${BSTONE_GENERATED_JM_FREE}"
     "../jm_io.cpp"
     "../jm_lzh.cpp"
     "../jm_tp.cpp"
@@ -227,7 +301,7 @@ set_source_files_properties(
 
 # Use the native Vita on-screen keyboard only for savegame-name entry.
 set_source_files_properties(
-  "../3d_menu.cpp"
+  "${BSTONE_GENERATED_3D_MENU}"
   PROPERTIES
     COMPILE_DEFINITIONS "US_LineInput=bstone_vita_line_input"
 )
