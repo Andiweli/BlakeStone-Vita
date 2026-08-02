@@ -294,9 +294,10 @@ set_source_files_properties(
     COMPILE_DEFINITIONS "SDL_GetPrefPath=bstone_vita_get_pref_path;US_ControlPanel=bstone_vita_control_panel"
 )
 
-# Use the native Vita on-screen keyboard only for savegame-name entry.
+# Use the native Vita on-screen keyboard for savegame and high-score names.
 set_source_files_properties(
   "${BSTONE_GENERATED_3D_MENU}"
+  "../3d_inter.cpp"
   PROPERTIES
     COMPILE_DEFINITIONS "US_LineInput=bstone_vita_line_input"
 )
