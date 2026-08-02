@@ -1,4 +1,4 @@
-<img width="2172" height="724" alt="Blake Stone PS Vita port title artwork" src="https://github.com/user-attachments/assets/9c39af93-7a33-462e-b876-e3189ae73e6a" />
+<img width="1000" height="333" alt="image" src="https://github.com/user-attachments/assets/6ad31821-26cf-44db-bccb-9920a5f7739d" />
 
 # Blake Stone PS Vita Port
 
