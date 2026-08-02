@@ -1,435 +1,99 @@
-<img width="2172" height="724" alt="image" src="https://github.com/user-attachments/assets/9c39af93-7a33-462e-b876-e3189ae73e6a" />
+<img width="2172" height="724" alt="Blake Stone PS Vita port title artwork" src="https://github.com/user-attachments/assets/9c39af93-7a33-462e-b876-e3189ae73e6a" />
 
-# Blake Stone
+# Blake Stone PS Vita Port
 
-A source port of Blake Stone: Aliens of Gold and Blake Stone: Planet Strike.
+**Blake Stone Vita** is a PlayStation Vita port of BStone for **Blake Stone: Aliens of Gold** and **Blake Stone: Planet Strike**. It brings both classic first-person shooters to PS Vita with controller, touchscreen and native on-screen keyboard support.
 
+This repository contains the current **PS Vita homebrew version 0.5**. Original game data is required and is not included.
 
-Contents
-========
+## PS Vita Changes
 
-1. Disclaimer
-2. Overview
-   1. Overview (PS Vita)
-3. Required assets
-4. Profile
-5. Compiling
-6. Command-line options
-7. Cheat key
-8. Debug keys
-9. Third party use
-10. Credits
-11. Links  
-    1. General
-    2. Add-ons for Aliens Of Gold (full)
-    3. Add-ons for Planet Strike
+- Native PS Vita on-screen keyboard for savegame names and high-score entries.
+- Reliable saving and loading through a fix for overlapping LZH compression memory operations.
+- Correct front-touchscreen detection with weapon, elevator-number and Planet Strike map-zoom touch zones.
+- Direct game-specific title screen for Aliens of Gold and Planet Strike; the unstable startup intro is skipped.
+- PS Vita confirmation controls: **X = Yes** and **O = No**.
+- `SWITCHES2` renamed to **SKIP OPTIONS**, including the submenu title.
+- Vita profile path fixed to `ux0:/data/bstone/`.
+- Vita-specific palette, widescreen and SDL compatibility fixes.
+- Application, in-game and LiveArea version updated to **0.5**.
 
+## Overview
 
-1 - Disclaimer
-==============
+### Supported Games
+
+- Blake Stone: Aliens of Gold — shareware and full versions 1.0, 2.0, 2.1 and 3.0
+- Blake Stone: Planet Strike — versions 1.0 and 1.1
+
+### Installation and Launch
+
+1. Install the `bstone.vpk` on your PS Vita.
+2. Create the directory `ux0:/data/bstone/` if it does not already exist.
+3. Copy the required original game assets into that directory.
+4. Start the main LiveArea item to launch Aliens of Gold when available. The automatic selection order is full Aliens of Gold, shareware Aliens of Gold, then Planet Strike.
+5. Use the Planet Strike LiveArea item to launch Planet Strike directly.
+
+Assets for multiple supported versions may coexist in the same directory. For reliable operation, close an already running instance before launching the application again from LiveArea.
+
+### Controls
+
+| PS Vita input | Action |
+|---|---|
+| Left stick | Move and strafe |
+| Right stick | Turn |
+| D-pad | Move forward/backward and turn |
+| L / Square | Use or open |
+| R / Triangle | Fire or accept |
+| X | About face; Yes in Y/N confirmation dialogs |
+| O | Next weapon or menu back; No in Y/N confirmation dialogs |
+| Select | Toggle map or status window |
+| Start | Open menu or go back |
+
+The front touchscreen provides additional controls:
+
+- Top-left and top-right areas select the previous or next weapon.
+- The right-side column acts as number keys for weapon selection and elevator buttons.
+- The left and right halves of the lower HUD area control Planet Strike map zoom.
+
+Configuration, logs, high scores and savegames are stored in `ux0:/data/bstone/`.
+
+## Required Assets
+
+The commercial game data is not included. You must own a legal copy of the game you want to play.
+
+| Aliens of Gold Shareware | Aliens of Gold Full | Planet Strike |
+|---|---|---|
+| `AUDIOHED.BS1` | `AUDIOHED.BS6` | `AUDIOHED.VSI` |
+| `AUDIOT.BS1` | `AUDIOT.BS6` | `AUDIOT.VSI` |
+|  | `EANIM.BS6` | `EANIM.VSI` |
+|  | `GANIM.BS6` |  |
+| `IANIM.BS1` | `IANIM.BS6` | `IANIM.VSI` |
+| `MAPHEAD.BS1` | `MAPHEAD.BS6` | `MAPHEAD.VSI` |
+| `MAPTEMP.BS1` | `MAPTEMP.BS6` | `MAPTEMP.VSI` |
+| `SANIM.BS1` | `SANIM.BS6` |  |
+| `VGADICT.BS1` | `VGADICT.BS6` | `VGADICT.VSI` |
+| `VGAGRAPH.BS1` | `VGAGRAPH.BS6` | `VGAGRAPH.VSI` |
+| `VGAHEAD.BS1` | `VGAHEAD.BS6` | `VGAHEAD.VSI` |
+| `VSWAP.BS1` | `VSWAP.BS6` | `VSWAP.VSI` |
+
+## Credits
+
+- **Boris Bendovsky** — BStone source port
+- **JAM Productions** — Blake Stone development
+- **id Software** — Wolfenstein 3D engine
+- **Apogee Entertainment** — publishing and original source release
+- **fgsfdsfgs** — control code used as the basis for the original Vita controls
+- **Rinnegatamante** — assistance with the PS Vita port
+- **VitaSDK and HENkaku contributors** — PS Vita homebrew toolchain and platform
+- **Andiweli** — current PS Vita maintenance, compatibility fixes and version 0.5
+
+## Disclaimer
 
 Copyright (c) 1992-2013 Apogee Entertainment, LLC  
-Copyright (c) 2013-2019 Boris I. Bendovsky (<bibendovsky@hotmail.com>)
+Copyright (c) 2013-2019 Boris I. Bendovsky (`bibendovsky@hotmail.com`)
 
-This program is free software; you can redistribute it and/or  
-modify it under the terms of the GNU General Public License  
-as published by the Free Software Foundation; either version 2  
-of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or any later version.
 
-This program is distributed in the hope that it will be useful,  
-but WITHOUT ANY WARRANTY; without even the implied warranty of  
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  
-GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but **WITHOUT ANY WARRANTY**, including the implied warranties of merchantability or fitness for a particular purpose. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License  
-along with this program; if not, write to the Free Software  
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-For a copy of the GNU General Public License see file LICENSE.  
-For an original source code license see file "Blake Stone source code license.doc".
-
-
-2 - Overview
-============
-
-BStone is a source port of Blake Stone game series: Aliens of Gold and Planet Strike.
-
-Features:
-* High resolution rendering of world (extended vanilla engine)
-* Modern and vanilla controls
-* Allows to customize control bindings
-* Separate volume control of sound effects and music
-
-Supported games:
-* Aliens of Gold (v1.0/v2.0/v2.1/v3.0) full or shareware
-* Planet Strike (v1.0/v1.1)
-
-
-2.1 - Overview (PS Vita)
-========================
-See [README-PSVITA.md](README-PSVITA.md) for details about the source port on PS Vita.
-
-
-3 - Required assets
-===================
-
-Since all titles are not free (except shareware) you have to own a copy of the game(s) in order to play.
-
-Required files for each game:
-
-|    AoG SW    |      AoG     |      PS      |
-|--------------|--------------|--------------|
-| AUDIOHED.BS1 | AUDIOHED.BS6 | AUDIOHED.VSI |
-| AUDIOT.BS1   | AUDIOT.BS6   | AUDIOT.VSI   |
-|              | EANIM.BS6    | EANIM.VSI    |
-|              | GANIM.BS6    |              |
-| IANIM.BS1    | IANIM.BS6    | IANIM.VSI    |
-| MAPHEAD.BS1  | MAPHEAD.BS6  | MAPHEAD.VSI  |
-| MAPTEMP.BS1  | MAPTEMP.BS6  | MAPTEMP.VSI  |
-| SANIM.BS1    | SANIM.BS6    |              |
-| VGADICT.BS1  | VGADICT.BS6  | VGADICT.VSI  |
-| VGAGRAPH.BS1 | VGAGRAPH.BS6 | VGAGRAPH.VSI |
-| VGAHEAD.BS1  | VGAHEAD.BS6  | VGAHEAD.VSI  |
-| VSWAP.BS1    | VSWAP.BS6    | VSWAP.VSI    |
-
-Legend:
-* AoG SW - Aliens of Gold (shareware)
-* AoG - Aliens of Gold (full)
-* PS - Planet Strike
-
-
-4 - Profile
-===========
-
-Configuration file, saved game files, etc. are stored in user's profile.  
-The path to those files depends on platform.  
-To override the path use --profile_dir option.
-
-On Windows, the path might look like:  
-`"C:\\Users\\john\\AppData\\Roaming\\bibendovsky\\bstone\\"`
-
-On Linux, the path might look like:  
-`"/home/john/.local/share/bibendovsky/bstone/"`
-
-On Mac OS X, the path might look like:  
-`"/Users/john/Library/Application Support/bibendovsky/bstone/"`
-
-Configuration file name: `bstone_config`  
-Log file name: `bstone_log.txt`  
-High scores file name: `bstone_game_high_scores`  
-Saved game file name: `bstone_game_saved_game`
-
-Where "game" is:  
-* `aog_sw` - Aliens of Gold (shareware)  
-* `aog_full` - Aliens of Gold (full)  
-* `ps` - Planet Strike
-
-
-5 - Compiling
-=============
-
-Minimum requirements:
-* C++14 compatible compiler.
-
-* CMake 3.1.3  
-  (<http://cmake.org/>)
-
-* SDL v2.0.4  
-  (<http://www.libsdl.org/>)
-
-CMake variables:
-* `CMAKE_BUILD_TYPE`  
-  Selects which build(s) to compile.  
-  Use semicolon to separate entries. 
-  Usually it's `Debug` or `Release`.  
-  For other values see CMake documentation.
-
-* `CMAKE_INSTALL_PREFIX`  
-  Selects location where install files to.
-
-* `BSTONE_PANDORA`  
-  Enables build for Open Pandora.
-
-* `BSTONE_USE_PCH`  
-  If enabled utilizes precompiled headers to speed up compilation.  
-  Note: Visual C++ only
-
-* `BSTONE_USE_STATIC_LINKING`  
-  If enabled links modules statically to avoid dependency on  
-  system and custom libraries at run-time.
-
-* `BSTONE_USE_MULTI_PROCESS_COMPILATION`  
-  Enables multi-process compilation if supported.
-
-* `SDL2W_SDL2_DIR`  
-  Defines directory with SDL2 CMake configuration file or with official SDL2 development Windows build.
-
-
-Notes:
-* Use `ON` value to enable option and value `OFF` to disable option.
-
-
-6 - Command-line options
-========================
-
-* `--version`  
-  Outputs the port's version to standard output and  
-  into message box.
-
-* `--aog_sw`  
-  Switches the port to Blake Stone: Aliens of Gold (shareware) mode.  
-  If appropriate data files will not be found the port will fail.  
-  Default switch strategy: AoG -> PS -> AoG (SW)
-
-* `--aog`  
-  Switches the port to Blake Stone: Aliens of Gold mode.  
-  If appropriate data files will not be found the port will fail.  
-  Default switch strategy: AoG -> PS -> AoG (SW)
-  
-* `--ps`  
-  Switches the port to Blake Stone: Planet Strike mode.  
-  If appropriate data files will not be found the port will fail.  
-  Default switch strategy: AoG -> PS -> AoG (SW)
-
-* `--no_screens`  
-  Skips start-up screens and the ending promo pages (AoG SW).
-
-* `--cheats`  
-  Enables so called "debug mode" without much fuss.
-
-* `--data_dir path_to_data`  
-  Specifies location to the game's data files.  
-  Default: current working directory.
-
-* `--mod_dir path_to_data`  
-  Specifies location to the mod's data files.  
-  Default: undefined.
-
-* `--profile_dir path`  
-  Overrides default location of the game's profile files.  
-
-* `--vid_renderer [d3d|ogl|ogles|ogles2|soft]`  
-  Forces to use a specified SDL renderer.  
-  `d3d` selects a Direct3D renderer.  
-  `ogl` selects an OpenGL renderer.  
-  `ogles` selects an OpenGL ES renderer.  
-  `ogles2` selects an OpenGL ES 2.0 renderer.  
-  `soft` selects a software renderer.  
-  Fallback renderer: `soft`.  
-  Default order without this option: `d3d`, `ogl`, `ogles`, `ogles2`, `soft`.
-
-* `--vid_windowed`  
-  Runs the game in windowed mode.  
-  Default video mode: 640x480
-
-* `--vid_mode width height`  
-  Selects the specified resolution for windowed mode.  
-  Without this option the game will use desktop's resolution.  
-  Minimum width: 640  
-  Minimum height: 480
-
-* `--vid_no_vsync`  
-  Disables vertical synchronization.
-
-* `--vid_scale factor`  
-  Refinement factor. The higher a value the greater internal resolution  
-  mode will be used to render a scene. The dimensions of the resolution mode  
-  are proportional to the original one (320x200) by 'factor' value.  
-  This option can greatly affect the performance of a renderer (especially a  
-  software one).  
-  Minimum factor: 1 (identical to the original game)  
-  Default factor: depends on the game's resolution mode.
-
-* `--vid_window_x offset`  
-  Sets a horizontal offset from the left side of the desktop screen.  
-  Applicable for windowed mode only.
-
-* `--vid_window_y offset`  
-  Sets a vertical offset from the top side of the desktop screen.  
-  Applicable for windowed mode only.
-
-* `--snd_rate sampling_rate`  
-  Specifies sampling rate of mixer in hertz.  
-  Default: 44100 Hz  
-  Minimum: 11025 Hz
-
-* `--snd_mix_size duration`  
-  Specifies mix data size in milliseconds.  
-  Default: 40 ms  
-  Minimum: 20 ms
-
-
-7 - Cheat key
-=============
-
-<kbd>J</kbd> <kbd>A</kbd> <kbd>M</kbd> <kbd>Enter</kbd>  
-Press specified keys sequentially.  
-Shows message "NOW you're jammin'!!", and gives to you all keys,  
-all weapons and restores health to 100% but zeroes score points.  
-Not available in shareware version.
-
-
-8 - Debug keys
-==============
-
-Add option "--cheats" to enable these keys.
-
-* <kbd>Backspace</kbd>+<kbd>A</kbd>  
-  Toggles visibility of actors on auto-map.
-
-* <kbd>Backspace</kbd>+<kbd>C</kbd>  
-  Shows counts of total static objects, in use static objects,  
-  doors, total actors, active actors.
-
-* <kbd>Backspace</kbd>+<kbd>D</kbd>  
-  Toggles player's invisibility.
-
-* <kbd>Backspace</kbd>+<kbd>E</kbd>  
-  Win mission instantly.
-
-* <kbd>Backspace</kbd>+<kbd>F</kbd>  
-  Shows player's coordinates and direction.
-
-* <kbd>Backspace</kbd>+<kbd>G</kbd>  
-  Toggles god mode.
-
-* <kbd>Backspace</kbd>+<kbd>H</kbd>  
-  Hurt yourself by 1%.
-
-* <kbd>Backspace</kbd>+<kbd>I</kbd>  
-  Each usage adds 99% health, 5 tokens, 50 ammo, one new weapon.
-
-* <kbd>Backspace</kbd>+<kbd>K</kbd>  
-  Shows total counts of enemies, points and informants on the map.
-
-* <kbd>Backspace</kbd>+<kbd>M</kbd>  
-  Memory information.
-
-* <kbd>Backspace</kbd>+<kbd>O</kbd>  
-  Shows push walls on auto-map.
-
-* <kbd>Backspace</kbd>+<kbd>Q</kbd>  
-  Instant quit.
-
-* <kbd>Backspace</kbd>+<kbd>R</kbd>  
-  Shows full map.
-
-* <kbd>Backspace</kbd>+<kbd>S</kbd>  
-  Slow motion.
-
-* <kbd>Backspace</kbd>+<kbd>U</kbd>  
-  Unlocks all maps.
-
-* <kbd>Backspace</kbd>+<kbd>W</kbd>  
-  Warps to specified map.
-
-* <kbd>Backspace</kbd>+<kbd>Shift</kbd>/<kbd>Caps Lock</kbd>+<kbd>W</kbd>  
-  Warps to specified map but loads it from scratch  
-  rather from a saved game file/memory.
-
-* <kbd>Backspace</kbd>+<kbd>Home</kbd>  
-  Selects previous ceiling texture.
-
-* <kbd>Backspace</kbd>+<kbd>Page Up</kbd>  
-  Selects next ceiling texture.
-
-* <kbd>Backspace</kbd>+<kbd>End</kbd>  
-  Selects previous flooring texture.
-
-* <kbd>Backspace</kbd>+<kbd>Page Down</kbd>  
-  Selects next flooring texture.
-
-* <kbd>Backspace</kbd>+<kbd>-</kbd>  
-  Decreases shading depth.
-
-* <kbd>Backspace</kbd>+<kbd>=</kbd>  
-  Increases shading depth.
-
-* <kbd>Backspace</kbd>+<kbd>[</kbd>  
-  Decreases shading drop off.
-
-* <kbd>Backspace</kbd>+<kbd>]</kbd>  
-  Increases shading drop off.
-
-
-9 - Third party use
-===================
-
-* Simple DirectMedia Library  
-  <http://libsdl.org/>  
-  See file COPYING-SDL2.txt for a license information.
-
-* DOSBox  
-  <http://www.dosbox.com/>  
-  See file dosbox/COPYING for a license information.  
-  Note: The source port uses only an OPL emulation code.
-
-
-10 - Credits
-===========
-
-* id Software  
-  Developing Wolfenstein 3D engine.  
-  <http://www.idsoftware.com/>
-
-* JAM Productions  
-  Developing the game.
-
-* Apogee Entertainment, LLC  
-  Publishing the game and releasing a source code.  
-  <http://www.apogeesoftware.com/>
-
-* Scott Smith  
-  Adaptation to Pandora console, various fixes.
-
-* Filipe Tolhuizen  
-  Testing the port.
-
-
-11 - Links
-==========
-
-11.1 - General
-==============
-
-* Home page:  
-  <http://bibendovsky.github.io/bstone/>
-
-* Blake Stone: Aliens of Gold official site:  
-  <http://legacy.3drealms.com/blake/index.html>
-
-* Blake Stone: Planet Strike official site:  
-  <http://legacy.3drealms.com/planet/index.html>
-
-* Apogee's article about releasing of an original source code:  
-  <http://www.apogeesoftware.com/uncategorized/apogee-releases-blake-stone-source-code>
-
-* Original source code:  
-  <http://bibendovsky.github.io/bstone/files/official/Blake%20Stone%20Planet%20Strike%20Source%20Code.rar>
-
-* Repacked shareware Blake Stone: Aliens Of Gold (v3.0):  
-  <http://bibendovsky.github.io/bstone/files/official/repack/bs_aog_v3_0_sw.zip>
-
-11.2 - Add-ons for Aliens Of Gold (full)
-========================================
-
-* Add-on "BSE90" by ack  
-  <http://bibendovsky.github.io/bstone/files/community/aog/bse90.zip>
-
-* Add-on "GUYSTONE" by Guy Brys  
-  <http://bibendovsky.github.io/bstone/files/community/aog/guystone.zip>
-
-* Ling's Blake Stone Levels by Ling Yan Li  
-  <http://bibendovsky.github.io/bstone/files/community/aog/lingstone.zip>
-
-11.3 - Add-ons for Planet Strike
-================================
-
-* Add-on "BSE24" by ack  
-  <http://bibendovsky.github.io/bstone/files/community/ps/bse24.zip>
-
-* Add-on "GUYSTRIKE" by Guy Brys  
-  <http://bibendovsky.github.io/bstone/files/community/ps/guystrike.zip>
-
-* Ling's Planet Strike Levels by Ling Yan Li  
-  <http://bibendovsky.github.io/bstone/files/community/ps/lingstrike.zip>
+See [`LICENSE`](LICENSE) for the GNU General Public License and `Blake Stone source code license.doc` for the original source-code license.
