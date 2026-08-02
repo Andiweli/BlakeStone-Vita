@@ -188,6 +188,8 @@ set(
     "vita_widescreen_fix.cpp"
     "vita_pref_path_fix.cpp"
     "vita_startup_screen_fix.cpp"
+    "vita_save_osk.cpp"
+    "vita_touch_fix.cpp"
 )
 
 add_executable(${SHORT_NAME}
@@ -220,6 +222,21 @@ set_source_files_properties(
   "../3d_main.cpp"
   PROPERTIES
     COMPILE_DEFINITIONS "SDL_GetPrefPath=bstone_vita_get_pref_path"
+)
+
+# Use the native Vita on-screen keyboard only for savegame-name entry.
+set_source_files_properties(
+  "../3d_menu.cpp"
+  PROPERTIES
+    COMPILE_DEFINITIONS "US_LineInput=bstone_vita_line_input"
+)
+
+# Current Vita SDL2 reports the front panel as TouchID 1. Retain the original
+# handler for reference and use vita_touch_fix.cpp as the active implementation.
+set_source_files_properties(
+  "vita_input.cpp"
+  PROPERTIES
+    COMPILE_DEFINITIONS "TranslateTouchEvent=TranslateTouchEvent_legacy_wrong_touch_id"
 )
 
 target_link_libraries(${SHORT_NAME}
