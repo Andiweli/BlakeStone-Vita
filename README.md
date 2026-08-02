@@ -11,7 +11,6 @@ This repository contains the current **PS Vita homebrew version 0.5**. Original 
 - Native PS Vita on-screen keyboard for savegame names and high-score entries.
 - Reliable saving and loading through a fix for overlapping LZH compression memory operations.
 - Correct front-touchscreen detection with weapon, elevator-number and Planet Strike map-zoom touch zones.
-- Direct game-specific title screen for Aliens of Gold and Planet Strike; the unstable startup intro is skipped.
 - PS Vita confirmation controls: **X = Yes** and **O = No**.
 - `SWITCHES2` renamed to **SKIP OPTIONS**, including the submenu title.
 - Vita profile path fixed to `ux0:/data/bstone/`.
