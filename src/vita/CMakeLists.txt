@@ -14,7 +14,7 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "Blake Stone")
 set(VITA_TITLEID  "BSTONE012")
-set(VITA_VERSION  "00.50")
+set(VITA_VERSION  "00.51")
 
 option(VITA_TEST "Vita debug mode" OFF)
 option(VITA_SHOW_WARNINGS "Show compiler warnings from the original sources" OFF)
