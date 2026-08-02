@@ -10,7 +10,7 @@
 
 This repository contains the current **PS Vita homebrew version 0.5**. Original game data is required and is not included.
 
-## PS Vita Changes
+## PS Vita Changes since 0.4
 
 - Native PS Vita on-screen keyboard for savegame names and high-score entries.
 - Reliable saving and loading through a fix for overlapping LZH compression memory operations.
