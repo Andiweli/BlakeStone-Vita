@@ -1,4 +1,4 @@
-<img width="1000" height="333" alt="image" src="https://github.com/user-attachments/assets/6ad31821-26cf-44db-bccb-9920a5f7739d" />
+<img width="1000" height="333" alt="image" src="https://github.com/Andiweli/BlakeStone-Vita/blob/develop/images/blakestone.jpg" />
 
 # Blake Stone PS Vita Port
 
