@@ -61,15 +61,17 @@ void show_safe_title_screen_once()
 	const auto* const title_palette = static_cast<const std::uint8_t*>(
 		::grsegs[TITLEPALETTE]);
 
+	// Apply the correct game palette directly. Do not combine the title palette
+	// with VL_SetPaletteIntensity/VL_FadeIn on Vita: that reproduces the GXM
+	// abort seen immediately after the startup intro.
 	::VL_SetPalette(0, 256, title_palette);
-	::VL_SetPaletteIntensity(0, 255, title_palette, 0);
 
 	bstone::Log::write("VITA: Title screen and palette cached.");
 
 	VW_UpdateScreen();
-	bstone::Log::write("VITA: Title screen presented.");
+	::VL_RefreshScreen();
+	bstone::Log::write("VITA: Title screen presented without palette fade.");
 
-	::VL_FadeIn(0, 255, title_palette, 30);
 	::UNCACHEGRCHUNK(TITLEPALETTE);
 
 	bstone::Log::write("VITA: Waiting on title screen...");
