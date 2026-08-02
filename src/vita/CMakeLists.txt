@@ -25,8 +25,9 @@ else()
   set(BSTONE_WARNING_FLAGS "-w")
 endif()
 
-# Keep the original Vita port's compiler and optimization settings unchanged.
-set(BSTONE_FLAGS "${BSTONE_WARNING_FLAGS} -fpermissive -Ofast -flto -funroll-loops -fvariable-expansion-in-unroller")
+# Keep the original Vita port's compiler and optimization settings unchanged,
+# but retain symbols and a linker map for exact Vita core-dump resolution.
+set(BSTONE_FLAGS "${BSTONE_WARNING_FLAGS} -fpermissive -Ofast -flto -funroll-loops -fvariable-expansion-in-unroller -g")
 
 if(VITA_TEST)
   add_definitions(-DVITATEST)
@@ -35,6 +36,7 @@ endif()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 ${BSTONE_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 ${BSTONE_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/bstone.map")
 
 include_directories(
   "../dosbox"
@@ -183,6 +185,8 @@ set(
     "vita_input.cpp"
     "vita_palette_fade.cpp"
     "vita_widescreen_fix.cpp"
+    "vita_pref_path_fix.cpp"
+    "vita_startup_screen_fix.cpp"
 )
 
 add_executable(${SHORT_NAME}
@@ -197,6 +201,15 @@ set_source_files_properties(
   "../id_vl.cpp"
   PROPERTIES
     COMPILE_DEFINITIONS "VL_FadeIn=VL_FadeIn_legacy_unsafe;VL_FadeOut=VL_FadeOut_legacy_unsafe;vl_update_widescreen=vl_update_widescreen_legacy_unsafe"
+)
+
+# Prevent the generic profile initialization from calling SDL_GetPrefPath on
+# Vita. That call creates ux0:/data/bibendovsky/bstone/ even though the port
+# subsequently uses ux0:/data/bstone/ as its fixed profile directory.
+set_source_files_properties(
+  "../3d_main.cpp"
+  PROPERTIES
+    COMPILE_DEFINITIONS "SDL_GetPrefPath=bstone_vita_get_pref_path"
 )
 
 target_link_libraries(${SHORT_NAME}
