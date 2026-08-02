@@ -48,11 +48,20 @@ link_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# Generate Vita-only variants of the two large shared sources. This keeps the
-# desktop sources untouched while applying small, explicit Vita UI/startup
-# changes at configure time.
+# Generate Vita-only variants of shared sources. This keeps desktop builds
+# untouched while applying the Vita version and menu-control changes.
 set(BSTONE_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 file(MAKE_DIRECTORY "${BSTONE_GENERATED_DIR}")
+
+set(BSTONE_GENERATED_3D_MAIN "${BSTONE_GENERATED_DIR}/3d_main_vita.cpp")
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/../3d_main.cpp" BSTONE_3D_MAIN_VITA_SOURCE)
+string(REPLACE
+  "static const std::string version = \"0.4\";"
+  "static const std::string version = \"0.5\";"
+  BSTONE_3D_MAIN_VITA_SOURCE
+  "${BSTONE_3D_MAIN_VITA_SOURCE}"
+)
+file(WRITE "${BSTONE_GENERATED_3D_MAIN}" "${BSTONE_3D_MAIN_VITA_SOURCE}")
 
 set(BSTONE_GENERATED_3D_MENU "${BSTONE_GENERATED_DIR}/3d_menu_vita.cpp")
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/../3d_menu.cpp" BSTONE_3D_MENU_VITA_SOURCE)
@@ -107,19 +116,6 @@ string(REPLACE
 )
 
 file(WRITE "${BSTONE_GENERATED_3D_MENU}" "${BSTONE_3D_MENU_VITA_SOURCE}")
-
-set(BSTONE_GENERATED_JM_FREE "${BSTONE_GENERATED_DIR}/jm_free_vita.cpp")
-file(READ "${CMAKE_CURRENT_SOURCE_DIR}/../jm_free.cpp" BSTONE_JM_FREE_VITA_SOURCE)
-string(REPLACE
-  "::PreDemo();"
-  "::bstone_vita_pre_demo();"
-  BSTONE_JM_FREE_VITA_SOURCE
-  "${BSTONE_JM_FREE_VITA_SOURCE}"
-)
-set(BSTONE_JM_FREE_VITA_SOURCE
-  "void bstone_vita_pre_demo();\n${BSTONE_JM_FREE_VITA_SOURCE}"
-)
-file(WRITE "${BSTONE_GENERATED_JM_FREE}" "${BSTONE_JM_FREE_VITA_SOURCE}")
 
 set(
     BSTONE_HEADERS
@@ -200,7 +196,7 @@ set(
     "../3d_draw2.cpp"
     "../3d_game.cpp"
     "../3d_inter.cpp"
-    "../3d_main.cpp"
+    "${BSTONE_GENERATED_3D_MAIN}"
     "${BSTONE_GENERATED_3D_MENU}"
     "../3d_msgs.cpp"
     "../3d_play.cpp"
@@ -248,7 +244,7 @@ set(
     "../id_vh.cpp"
     "../id_vl.cpp"
     "../jm_cio.cpp"
-    "${BSTONE_GENERATED_JM_FREE}"
+    "../jm_free.cpp"
     "../jm_io.cpp"
     "../jm_lzh.cpp"
     "../jm_tp.cpp"
@@ -261,8 +257,6 @@ set(
     "vita_palette_fade.cpp"
     "vita_widescreen_fix.cpp"
     "vita_pref_path_fix.cpp"
-    "vita_startup_screen_fix.cpp"
-    "vita_title_screen.cpp"
     "vita_save_osk.cpp"
     "vita_touch_fix.cpp"
 )
@@ -290,13 +284,12 @@ set_source_files_properties(
     COMPILE_DEFINITIONS "VL_FadeIn=VL_FadeIn_legacy_unsafe;VL_FadeOut=VL_FadeOut_legacy_unsafe;vl_update_widescreen=vl_update_widescreen_legacy_unsafe"
 )
 
-# Prevent SDL_GetPrefPath from creating bibendovsky/bstone on Vita. Redirect
-# the first menu call through a safe title-screen presenter while the original
-# crash-prone movie/palette title path remains bypassed.
+# Prevent the generic profile initialization from calling SDL_GetPrefPath on
+# Vita. The original PreDemo -> DemoLoop intro/title control flow is retained.
 set_source_files_properties(
-  "../3d_main.cpp"
+  "${BSTONE_GENERATED_3D_MAIN}"
   PROPERTIES
-    COMPILE_DEFINITIONS "SDL_GetPrefPath=bstone_vita_get_pref_path;US_ControlPanel=bstone_vita_control_panel"
+    COMPILE_DEFINITIONS "SDL_GetPrefPath=bstone_vita_get_pref_path"
 )
 
 # Use the native Vita on-screen keyboard only for savegame-name entry.
