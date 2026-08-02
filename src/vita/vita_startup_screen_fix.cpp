@@ -1,10 +1,8 @@
 /*
-BStone Vita startup-screen bypass.
+BStone Vita startup-screen compatibility setup.
 
-The original startup movie leaves current Vita SDL2/GXM builds in a state that
-aborts when the following title screen is presented. Skip the optional intro
-sequence and the original rotating demo/title loop. vita_title_screen.cpp shows
-one stable title screen immediately before the first menu instead.
+The movie parser now reads packed animation structures through aligned local
+copies, so the original intro/title flow can be used again on PS Vita.
 */
 
 extern bool g_no_screens;
@@ -12,14 +10,14 @@ extern bool g_no_screens;
 namespace
 {
 
-struct VitaStartupScreenBypass
+struct VitaStartupScreenSetup
 {
-	VitaStartupScreenBypass()
+	VitaStartupScreenSetup()
 	{
-		g_no_screens = true;
+		g_no_screens = false;
 	}
 };
 
-VitaStartupScreenBypass vita_startup_screen_bypass;
+VitaStartupScreenSetup vita_startup_screen_setup;
 
 } // namespace
