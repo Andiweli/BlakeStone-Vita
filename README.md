@@ -8,7 +8,7 @@
 
 **Blake Stone Vita** is a PlayStation Vita port of BStone for **Blake Stone: Aliens of Gold** and **Blake Stone: Planet Strike**. It brings both classic first-person shooters to PS Vita with controller, touchscreen and native on-screen keyboard support.
 
-This repository contains the current **PS Vita homebrew version 0.5**. Original game data is required and is not included.
+This repository contains the current **PS Vita homebrew version 0.5.1**. Original game data is required and is not included.
 
 ## PS Vita Changes since 0.4
 
@@ -19,7 +19,8 @@ This repository contains the current **PS Vita homebrew version 0.5**. Original 
 - `SWITCHES2` renamed to **SKIP OPTIONS**, including the submenu title.
 - Vita profile path fixed to `ux0:/data/bstone/`.
 - Vita-specific palette, widescreen and SDL compatibility fixes.
-- Application, in-game and LiveArea version updated to **0.5**.
+- Crashes during the intro and outro sequences have been fixed.
+- Misaligned 16-bit and 32-bit memory accesses in the ARM movie parser have been removed.
 
 ## Overview
 
@@ -85,7 +86,7 @@ The commercial game data is not included. You must own a legal copy of the game 
 - **id Software** — Wolfenstein 3D engine
 - **Apogee Entertainment** — publishing and original source release
 - **01y** — original PS Vita port
-- **Andiweli** — compatibility fixes and version 0.5
+- **Andiweli** — compatibility fixes for version 0.5 and newer
 
 ## Disclaimer
 
