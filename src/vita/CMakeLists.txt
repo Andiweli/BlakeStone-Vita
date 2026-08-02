@@ -112,6 +112,7 @@ set(
     "../jm_tp.h"
     "../jm_vl.h"
     "../movie.h"
+    "jm_lzh_overlap_fix.h"
 )
 
 set(
@@ -192,6 +193,15 @@ set(
 add_executable(${SHORT_NAME}
     ${BSTONE_HEADERS}
     ${BSTONE_SOURCES}
+)
+
+# jm_lzh.cpp moves elements inside overlapping array ranges while rebuilding
+# the adaptive Huffman tree. Force-include the Vita-specific compatibility
+# header so these copies use memmove instead of undefined memcpy behavior.
+set_source_files_properties(
+  "../jm_lzh.cpp"
+  PROPERTIES
+    COMPILE_FLAGS "-include ${CMAKE_CURRENT_SOURCE_DIR}/jm_lzh_overlap_fix.h"
 )
 
 # Keep the original renderer code intact, but rename the desktop-oriented
