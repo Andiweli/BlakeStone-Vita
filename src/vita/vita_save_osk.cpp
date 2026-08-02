@@ -2,9 +2,9 @@
 BStone Vita savegame-name keyboard support.
 
 The original save menu calls US_LineInput(), which expects a physical keyboard.
-On Vita, SDL_StartTextInput opens the native IME dialog. The Vita SDL backend
-returns the completed text through SDL_TEXTINPUT and sends Return only when the
-user confirms the dialog.
+On Vita, SDL_StartTextInput opens the native IME dialog. The GXM renderer must
+continue presenting frames while the common dialog is active; otherwise the
+keyboard remains invisible and the input routine appears to hang.
 */
 
 #include <algorithm>
@@ -16,6 +16,7 @@ user confirms the dialog.
 #include "SDL.h"
 #include "../id_in.h"
 #include "../id_us.h"
+#include "../id_vl.h"
 
 
 namespace
@@ -47,6 +48,13 @@ void append_ascii_text(
 	}
 }
 
+void finish_text_input()
+{
+	::SDL_StopTextInput();
+	::SDL_FlushEvents(SDL_KEYDOWN, SDL_KEYUP);
+	::IN_ClearKeysDown();
+}
+
 } // namespace
 
 
@@ -59,6 +67,10 @@ bool bstone_vita_line_input(
 	std::int16_t maxchars,
 	std::int16_t maxwidth)
 {
+	static_cast<void>(x);
+	static_cast<void>(y);
+	static_cast<void>(maxwidth);
+
 	if (!buf || maxchars <= 0)
 	{
 		return false;
@@ -66,9 +78,12 @@ bool bstone_vita_line_input(
 
 	auto* const window = ::SDL_GetKeyboardFocus();
 
+	// Never fall back to US_LineInput on Vita. Without a physical keyboard that
+	// editor blocks the menu indefinitely. A failed IME simply cancels naming.
 	if (!window || ::SDL_HasScreenKeyboardSupport() != SDL_TRUE)
 	{
-		return ::US_LineInput(x, y, buf, def, escok, maxchars, maxwidth);
+		::IN_ClearKeysDown();
+		return false;
 	}
 
 	const auto max_length = static_cast<std::size_t>(maxchars);
@@ -76,7 +91,7 @@ bool bstone_vita_line_input(
 	auto keyboard_was_shown = false;
 	auto accepted = false;
 	auto finished = false;
-	auto startup_polls = 0;
+	auto startup_frames = 0;
 
 	::IN_ClearKeysDown();
 	::SDL_FlushEvent(SDL_TEXTINPUT);
@@ -85,6 +100,11 @@ bool bstone_vita_line_input(
 
 	while (!finished)
 	{
+		// Vita's GXM SDL renderer calls sceCommonDialogUpdate from
+		// SDL_RenderPresent. Keep presenting the current save-menu frame so the
+		// IME becomes visible and remains interactive.
+		::VL_RefreshScreen();
+
 		auto event = SDL_Event{};
 
 		while (::SDL_PollEvent(&event))
@@ -156,23 +176,21 @@ bool bstone_vita_line_input(
 			finished = true;
 		}
 
-		// Fall back to the original editor if this SDL build unexpectedly
-		// reports keyboard support but cannot open the Vita IME.
-		if (!keyboard_was_shown && ++startup_polls > 180)
+		// If this SDL build cannot start the IME, cancel cleanly instead of
+		// entering the physical-keyboard editor and locking the menu.
+		if (!keyboard_was_shown && ++startup_frames > 180)
 		{
-			::SDL_StopTextInput();
-			::IN_ClearKeysDown();
-			return ::US_LineInput(x, y, buf, def, escok, maxchars, maxwidth);
+			finish_text_input();
+			return false;
 		}
 
 		if (!finished)
 		{
-			::SDL_Delay(10);
+			::SDL_Delay(16);
 		}
 	}
 
-	::SDL_StopTextInput();
-	::IN_ClearKeysDown();
+	finish_text_input();
 
 	if (!accepted)
 	{
