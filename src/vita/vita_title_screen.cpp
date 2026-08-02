@@ -22,6 +22,7 @@ extern std::int16_t TITLEPIC;
 extern std::int16_t TITLE1PIC;
 
 void CA_CacheScreen(std::int16_t chunk);
+void VH_UpdateScreen();
 void US_ControlPanel(ScanCode scancode);
 
 
@@ -39,8 +40,10 @@ void show_safe_title_screen_once()
 
 	was_shown = true;
 
-	const auto& assets_info = AssetsInfo{};
-	const auto title_chunk = assets_info.is_aog() ? TITLEPIC : TITLE1PIC;
+	// Aliens of Gold initializes TITLEPIC, while Planet Strike initializes
+	// TITLE1PIC. Avoid pulling the private AssetsInfo declaration into this
+	// small Vita compatibility translation unit.
+	const auto title_chunk = TITLEPIC != 0 ? TITLEPIC : TITLE1PIC;
 	const auto old_movie_state = ::vid_is_movie;
 
 	bstone::Log::write("VITA: Showing safe title screen...");
@@ -54,7 +57,7 @@ void show_safe_title_screen_once()
 	::CA_CacheScreen(title_chunk);
 	bstone::Log::write("VITA: Title screen cached.");
 
-	::VW_UpdateScreen();
+	VW_UpdateScreen();
 	bstone::Log::write("VITA: Title screen presented.");
 
 	if (::screenfaded)
