@@ -81,7 +81,7 @@ The commercial game data is not included. You must own a legal copy of the game 
 
 ## Credits
 
-- **Boris Bendovsky** — BStone source port
+- **Boris Bendovsky** — Blake Stone source port
 - **JAM Productions** — Blake Stone development
 - **id Software** — Wolfenstein 3D engine
 - **Apogee Entertainment** — publishing and original source release
