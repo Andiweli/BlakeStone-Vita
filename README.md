@@ -47,7 +47,7 @@ Assets for multiple supported versions may coexist in the same directory. For re
 | D-pad | Move forward/backward and turn |
 | L / Square | Use or open |
 | R / Triangle | Fire or accept |
-| X | About face; Yes in Y/N confirmation dialogs |
+| X | Yes in Y/N confirmation dialogs |
 | O | Next weapon or menu back; No in Y/N confirmation dialogs |
 | Select | Toggle map or status window |
 | Start | Open menu or go back |
