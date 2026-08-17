@@ -5,6 +5,8 @@
 [![Latest release](https://img.shields.io/github/v/release/andiweli/BlakeStone-Vita?label=latest%20Vita%20release)](https://github.com/andiweli/BlakeStone-Vita/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-PS%20Vita%20%2F%20PSTV-blue)](https://github.com/andiweli/BlakeStone-Vita)
 ![AI](https://img.shields.io/badge/AI-assisted%20coding-6e7781)
+[![Support via PayPal](https://img.shields.io/badge/Support%20via-PayPal-0070BA?logo=paypal\&logoColor=white)](https://paypal.me/andiweli)
+
 
 **Blake Stone Vita** is a PlayStation Vita port of BStone for **Blake Stone: Aliens of Gold** and **Blake Stone: Planet Strike**. It brings both classic first-person shooters to PS Vita with controller, touchscreen and native on-screen keyboard support.
 
@@ -87,6 +89,16 @@ The commercial game data is not included. You must own a legal copy of the game 
 - **Apogee Entertainment** — publishing and original source release
 - **01y** — original PS Vita port
 - **Andiweli** — compatibility fixes for version 0.5 and newer
+
+## ❤️ Support
+
+If you enjoy this project and would like to support my work, you can make a small contribution via PayPal.
+
+Your support helps me spend more time maintaining existing projects, fixing bugs, improving compatibility, and working on new features.
+
+[![Support via PayPal](https://img.shields.io/badge/Support%20via-PayPal-0070BA?logo=paypal\&logoColor=white)](https://paypal.me/andiweli)
+
+Thank you for your support!
 
 ## Disclaimer
 
